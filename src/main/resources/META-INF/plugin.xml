@@ -9,10 +9,24 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.beardyking.bettercommandlineargs.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.github.beardyking.simpleclargs.toolWindow.CLAToolWindow" id="CLArgs"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.github.beardyking.bettercommandlineargs.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+    <actions>
+        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete"
+                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete" text="CLArg_Delete"
+                description="Delete command line argument table selection">
+            <keyboard-shortcut keymap="$default" first-keystroke="DELETE"/>
+        </action>
+        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert"
+                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert" text="Insert"
+                description="Insert new CLArg under selected row">
+            <keyboard-shortcut keymap="$default" first-keystroke="INSERT"/>
+        </action>
+        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc"
+                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc" text="Deselect"
+                description="Deselect CLArgs table">
+            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
+        </action>
+    </actions>
 </idea-plugin>
