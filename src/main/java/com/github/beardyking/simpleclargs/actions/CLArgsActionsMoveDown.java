@@ -7,10 +7,9 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class CLArgsActionsEsc extends AnAction {
+public class CLArgsActionsMoveDown extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        //CLAToolWindow.CLArgTree.deselect_table_action();
+        //CLAToolWindow.CLArgTree.button_move_down_action();
     }
 }
-
