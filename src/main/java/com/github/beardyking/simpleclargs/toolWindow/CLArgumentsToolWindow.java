@@ -7,11 +7,19 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
-import java.io.IOException;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.EventObject;
 
+import static com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow.CLArgumentTree.*;
 import static java.util.Arrays.sort;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.DumbAware;
@@ -38,10 +46,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import static com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow.CLArgumentTree.hasDisabledParent;
-import static com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow.CLArgumentTree.updatePreviewNodeText;
-
 public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
+    String filePath = "CLArgs.json";
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -88,10 +94,14 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
 
         private JPanel createTreeTab() {
             JPanel frame = new JPanel(new BorderLayout());
+            NodeDataJsonParser jsonParser = new NodeDataJsonParser();
+            rootNode = jsonParser.loadNodeDataTreeFromJson(filePath);
 
-            rootNode = new DefaultMutableTreeNode(new NodeData(true, "root", false));
-            DefaultMutableTreeNode leafEnv = new DefaultMutableTreeNode(new NodeData(false, "-CLA environment variables <CLion>", true));
-            rootNode.add(leafEnv);
+            if (rootNode == null) {
+                rootNode = new DefaultMutableTreeNode(new NodeData(true, "root", false));
+                DefaultMutableTreeNode leafEnv = new DefaultMutableTreeNode(new NodeData(false, "-CLA environment variables <CLion>", true));
+                rootNode.add(leafEnv);
+            }
 
             CustomTreeModel treeModel = new CustomTreeModel(rootNode);
             tree = new Tree(treeModel);
@@ -102,6 +112,8 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
             tree.setDragEnabled(true);
             tree.setDropMode(DropMode.ON_OR_INSERT);
             tree.setTransferHandler(new CheckboxTreeTransferHandler(tree));
+
+            jsonParser.expandAllNodes(tree, rootNode);
 
             nodeTextLabel.setEditable(false);
             nodeTextLabel.setOpaque(false);
@@ -194,21 +206,25 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                 @Override
                 public void treeNodesChanged(TreeModelEvent e) {
                     updatePreviewNodeText();
+                    saveCommandTreeToFile();
                 }
 
                 @Override
                 public void treeNodesInserted(TreeModelEvent e) {
                     updatePreviewNodeText();
+                    saveCommandTreeToFile();
                 }
 
                 @Override
                 public void treeNodesRemoved(TreeModelEvent e) {
                     updatePreviewNodeText();
+                    saveCommandTreeToFile();
                 }
 
                 @Override
                 public void treeStructureChanged(TreeModelEvent e) {
                     updatePreviewNodeText();
+                    saveCommandTreeToFile();
                 }
             });
             return frame;
@@ -232,6 +248,7 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         public static void updatePreviewNodeText() {
             String labelText = updateNodeTexts(rootNode);
             nodeTextLabel.setText(labelText);
+
         }
 
         private JPanel createTableTab() {
@@ -369,8 +386,6 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                     } else {
                         CustomTreeModel treeModel = (CustomTreeModel) tree.getModel();
                         treeModel.insertNodeIntoWithoutCollapse(newNode, rootNode);
-
-                        // Expand the root node to show the newly added node
                         TreePath rootPath = new TreePath(rootNode.getPath());
                         tree.expandPath(rootPath);
                     }
@@ -455,6 +470,107 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         }
     }
 
+    public class NodeDataJsonParser {
+        private final ObjectMapper objectMapper;
+        private final String clargVersion = "1.0";
+
+        public NodeDataJsonParser() {
+            this.objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        }
+
+        public void saveNodeDataTreeToJson(DefaultMutableTreeNode rootNode, String filePath) {
+            try {
+                ObjectNode jsonNode = objectMapper.createObjectNode();
+                jsonNode.put("clarg_version", clargVersion);
+                jsonNode.set("root", saveNodeToJson(rootNode));
+
+                ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
+                writer.writeValue(new File(filePath), jsonNode);
+                System.out.println("NodeData tree saved to JSON successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("Failed to save NodeData tree to JSON.");
+            }
+        }
+
+        public DefaultMutableTreeNode loadNodeDataTreeFromJson(String filePath) {
+            try {
+                JsonNode rootNode = objectMapper.readTree(new File(filePath));
+                String loadedVersion = rootNode.get("clarg_version").asText();
+
+                if (clargVersion.equals(loadedVersion)) {
+                    JsonNode treeData = rootNode.get("root");
+                    DefaultMutableTreeNode loadedRootNode = loadNodeFromJson(treeData);
+                    return loadedRootNode;
+                } else {
+                    System.err.println("Incompatible CLArg version. Expected: " + clargVersion + ", Loaded: " + loadedVersion);
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("Failed to load NodeData tree from JSON.");
+                return null;
+            }
+        }
+
+        private ObjectNode saveNodeToJson(DefaultMutableTreeNode node) {
+            ObjectNode nodeObject = objectMapper.createObjectNode();
+            NodeData nodeData = (NodeData) node.getUserObject();
+            nodeObject.put("isSelected", nodeData.isSelected());
+            nodeObject.put("text", nodeData.getText());
+            nodeObject.put("isLeaf", nodeData.isLeaf());
+
+            ArrayNode childrenArray = objectMapper.createArrayNode();
+            Enumeration<TreeNode> children = node.children();
+            while (children.hasMoreElements()) {
+                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+                childrenArray.add(saveNodeToJson(childNode));
+            }
+
+            nodeObject.set("children", childrenArray);
+            return nodeObject;
+        }
+
+        private DefaultMutableTreeNode loadNodeFromJson(JsonNode jsonNode) {
+            NodeData nodeData = new NodeData(
+                    jsonNode.get("isSelected").asBoolean(),
+                    jsonNode.get("text").asText(),
+                    jsonNode.get("isLeaf").asBoolean()
+            );
+
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode(nodeData);
+            JsonNode childrenArray = jsonNode.get("children");
+            if (childrenArray != null) {
+                for (JsonNode childNode : childrenArray) {
+                    node.add(loadNodeFromJson(childNode));
+                }
+            }
+            return node;
+        }
+
+        private void expandAllNodes(JTree tree, DefaultMutableTreeNode node) {
+            if (node == null) {
+                return;
+            }
+
+            TreePath path = new TreePath(((DefaultTreeModel) tree.getModel()).getPathToRoot(node));
+            tree.expandPath(path);
+
+            Enumeration<?> children = node.children();
+            while (children.hasMoreElements()) {
+                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+                expandAllNodes(tree, childNode);
+            }
+        }
+    }
+
+    public void saveCommandTreeToFile() {
+        NodeDataJsonParser jsonParser = new NodeDataJsonParser();
+        jsonParser.saveNodeDataTreeToJson(rootNode, filePath);
+        //TODO:refactor all of this it's all pretty crusty :^(
+    }
+
     class NodeData {
         private boolean isSelected;
         private String text;
@@ -508,7 +624,7 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         public EditableCheckboxTreeCellRenderer(JTree tree) {
             this.tree = tree;
             setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-            iconLabel.setPreferredSize(new Dimension(16, 16)); // Set your preferred size here
+            iconLabel.setPreferredSize(new Dimension(16, 16));
 
             defaultTextFieldBackgroundColor = textField.getBackground();
             defaultTextFieldBorder = textField.getBorder();
@@ -586,6 +702,7 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                 public void focusLost(FocusEvent e) {
                     stopCellEditing();
                     updatePreviewNodeText();
+                    saveCommandTreeToFile();
                 }
             });
 
@@ -787,3 +904,4 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         }
     }
 }
+
