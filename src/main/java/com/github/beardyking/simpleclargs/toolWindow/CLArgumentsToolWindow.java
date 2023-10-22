@@ -8,6 +8,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
 import java.io.*;
+import java.security.SecureRandom;
 import java.util.Enumeration;
 import java.util.EventObject;
 
@@ -22,15 +23,24 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.*;
+import com.intellij.ui.components.JBPanel;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.Tree;
+
 
 import org.jetbrains.annotations.NotNull;
 
@@ -46,6 +56,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
     String filePath = "CLArgs.json";
 
@@ -60,6 +75,40 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         public final JPanel frame = new JPanel(new BorderLayout());
         static Dimension squareButtonSize = new Dimension(32, 32);
 
+        public void updateClargData(String inCommandLineArguments) {
+            Project project = ProjectManager.getInstance().getOpenProjects()[0];
+            VirtualFile workspaceFile = project.getWorkspaceFile();
+            System.out.println(workspaceFile.getName());
+
+            try {
+                String xmlContent = new String(workspaceFile.contentsToByteArray(), workspaceFile.getCharset());
+                String tagToSearch = "<configuration name=";
+                String attributeToSearch = "type=\"CMakeRunConfiguration\"";
+                if (xmlContent.contains(tagToSearch) && xmlContent.contains(attributeToSearch)) {
+                    int startIndex = xmlContent.indexOf(tagToSearch);
+                    int endIndex = xmlContent.indexOf(">", startIndex) + 1;
+                    String configurationContent = xmlContent.substring(startIndex, endIndex);
+
+                    Pattern pattern = Pattern.compile("PROGRAM_PARAMS=\"[^\"]*\"");
+                    Matcher matcher = pattern.matcher(configurationContent);
+
+                    if (matcher.find()) {
+                        String match = matcher.group();
+                        configurationContent = configurationContent.replace(match, "PROGRAM_PARAMS=\"" + inCommandLineArguments + "\"");
+                    } else {
+                        // likely did not find `PROGRAM_PARAMS` as it doesn't exist in the XML file
+                        // so add `PROGRAM_PARAMS` to `configuration`  in the workspace virtual file
+                        configurationContent = configurationContent.replace(">", " PROGRAM_PARAMS=\"" + inCommandLineArguments + "\">");
+                    }
+                    xmlContent = xmlContent.substring(0, startIndex) + configurationContent + xmlContent.substring(endIndex);
+                }
+
+                VfsUtil.saveText(workspaceFile, xmlContent);
+                workspaceFile.refresh(true, true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         public CLArgumentTree(ToolWindow toolWindow) {
             JBTabbedPane tabbedPane = new JBTabbedPane();
@@ -93,7 +142,7 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
         static Tree tree;
 
         private JPanel createTreeTab() {
-            JPanel frame = new JPanel(new BorderLayout());
+            JBPanel frame = new JBPanel(new BorderLayout());
             NodeDataJsonParser jsonParser = new NodeDataJsonParser();
             rootNode = jsonParser.loadNodeDataTreeFromJson(filePath);
 
@@ -110,7 +159,7 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
             tree.setCellEditor(new EditableCheckboxTreeCellEditor(tree));
 
             tree.setDragEnabled(true);
-            tree.setDropMode(DropMode.ON_OR_INSERT);
+            tree.setDropMode(DropMode.ON);
             tree.setTransferHandler(new CheckboxTreeTransferHandler(tree));
 
             jsonParser.expandAllNodes(tree, rootNode);
@@ -118,14 +167,14 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
             nodeTextLabel.setEditable(false);
             nodeTextLabel.setOpaque(false);
 
-            JScrollPane nodeTextScrollPane = new JScrollPane(nodeTextLabel);
+            JBScrollPane nodeTextScrollPane = new JBScrollPane(nodeTextLabel);
             nodeTextScrollPane.setPreferredSize(new Dimension(400, 100));
 
-            JPanel treePanel = new JPanel(new BorderLayout());
-            treePanel.add(new JScrollPane(tree), BorderLayout.CENTER);
+            JBPanel treePanel = new JBPanel(new BorderLayout());
+            treePanel.add(new JBScrollPane(tree), BorderLayout.CENTER);
 
 
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JBPanel buttonPanel = new JBPanel(new FlowLayout(FlowLayout.LEFT));
             JButton addNodeButton = new JButton((AllIcons.General.Add));
             addNodeButton.setPreferredSize(squareButtonSize);
 
@@ -177,6 +226,8 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_HOME) {
                         moveSelectedNodesToFolder(tree);
+
+                        jsonParser.expandAllNodes(tree, rootNode); // should use the node expand path function instead.
                     }
                 }
             });
@@ -185,6 +236,15 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_INSERT) {
                         addNode(tree, new NodeData());
+                    }
+                }
+            });
+            // debug code
+            tree.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_R) {
+                        updateClargData(updateNodeTexts(rootNode));
                     }
                 }
             });
@@ -207,24 +267,28 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                 public void treeNodesChanged(TreeModelEvent e) {
                     updatePreviewNodeText();
                     saveCommandTreeToFile();
+                    updateClargData(updateNodeTexts(rootNode));
                 }
 
                 @Override
                 public void treeNodesInserted(TreeModelEvent e) {
                     updatePreviewNodeText();
                     saveCommandTreeToFile();
+                    updateClargData(updateNodeTexts(rootNode));
                 }
 
                 @Override
                 public void treeNodesRemoved(TreeModelEvent e) {
                     updatePreviewNodeText();
                     saveCommandTreeToFile();
+                    updateClargData(updateNodeTexts(rootNode));
                 }
 
                 @Override
                 public void treeStructureChanged(TreeModelEvent e) {
                     updatePreviewNodeText();
                     saveCommandTreeToFile();
+                    updateClargData(updateNodeTexts(rootNode));
                 }
             });
             return frame;
@@ -365,9 +429,8 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                     if (selectedNode != null) {
                         DefaultMutableTreeNode parent = (DefaultMutableTreeNode) selectedNode.getParent();
 
+                        CustomTreeModel treeModel = (CustomTreeModel) tree.getModel();
                         if (parent != null) {
-                            int selectedIndex = parent.getIndex(selectedNode);
-                            CustomTreeModel treeModel = (CustomTreeModel) tree.getModel();
                             if (selectedNode.isLeaf()) {
                                 treeModel.insertNodeIntoWithoutCollapse(newNode, parent);
                             } else {
@@ -377,7 +440,6 @@ public class CLArgumentsToolWindow implements ToolWindowFactory, DumbAware {
                             TreePath parentPath = new TreePath(parent.getPath());
                             tree.expandPath(parentPath);
                         } else {
-                            CustomTreeModel treeModel = (CustomTreeModel) tree.getModel();
                             treeModel.insertNodeIntoWithoutCollapse(newNode, rootNode);
 
                             TreePath rootPath = new TreePath(rootNode.getPath());

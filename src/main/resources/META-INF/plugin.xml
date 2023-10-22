@@ -4,7 +4,15 @@
     <name>better_command_line_args Template</name>
     <vendor>beardyking</vendor>
 
+    <depends>com.intellij.cidr.base</depends>
+    <depends>com.intellij.clion</depends>
+    <depends>com.intellij.modules.clion</depends>
+    <depends>com.intellij.modules.clion.ide</depends>
+    <depends>com.intellij.modules.clion.cmake</depends>
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.lang</depends>
+
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
