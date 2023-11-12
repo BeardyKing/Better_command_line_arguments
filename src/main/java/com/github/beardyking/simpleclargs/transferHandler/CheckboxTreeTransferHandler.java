@@ -13,8 +13,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
-import com.github.beardyking.simpleclargs.utils.CLArgUtils;
-
 public class CheckboxTreeTransferHandler extends TransferHandler {
     private final JTree tree;
     public static DataFlavor nodeFlavor;
@@ -30,7 +28,7 @@ public class CheckboxTreeTransferHandler extends TransferHandler {
 
     @Override
     public int getSourceActions(JComponent c) {
-        return TransferHandler.MOVE; // Allow moving nodes
+        return TransferHandler.MOVE;
     }
 
     @Override
@@ -74,19 +72,45 @@ public class CheckboxTreeTransferHandler extends TransferHandler {
                 DefaultMutableTreeNode[] nodes = (DefaultMutableTreeNode[]) transferable.getTransferData(nodeFlavor);
                 DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 
-                for (DefaultMutableTreeNode node : nodes) {
-                    if (!isNodeDescendant(node, newParent)) {
-                        DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) node.getParent();
-                        if (oldParent != null) {
-                            model.removeNodeFromParent(node);
-                        }
+                int targetChildIndex = dl.getChildIndex();
+                int adjustedIndex = targetChildIndex;
 
-                        model.insertNodeInto(node, newParent, newParent.getChildCount());
+                for (DefaultMutableTreeNode node : nodes) {
+                    int dragFromChildIndex = model.getIndexOfChild(node.getParent(), node);
+                    if (targetChildIndex > dragFromChildIndex) {
+                        adjustedIndex--;
+                    }
+
+                    if (targetChildIndex == dragFromChildIndex) {
+                        return false;
+                    }
+                }
+
+                if (dl.getChildIndex() == -1) {
+                    for (DefaultMutableTreeNode node : nodes) {
+                        if (isNodeDescendant(node, newParent)) {
+                            DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) node.getParent();
+                            if (oldParent != null) {
+                                model.removeNodeFromParent(node);
+                            }
+
+                            model.insertNodeInto(node, newParent, newParent.getChildCount());
+                        }
+                    }
+                } else {
+                    for (DefaultMutableTreeNode node : nodes) {
+                        if (isNodeDescendant(node, newParent)) {
+                            DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) node.getParent();
+                            if (oldParent != null) {
+                                model.removeNodeFromParent(node);
+                            }
+
+                            model.insertNodeInto(node, newParent, adjustedIndex);
+                        }
                     }
                 }
 
                 tree.expandPath(dl.getPath());
-                CLArgUtils.expandAllNodes(tree, dl.getPath());
 
                 return true;
             }
@@ -99,16 +123,16 @@ public class CheckboxTreeTransferHandler extends TransferHandler {
 
     private boolean isNodeDescendant(DefaultMutableTreeNode node, DefaultMutableTreeNode potentialDescendant) {
         if (potentialDescendant == null) {
-            return false;
+            return true;
         }
 
         TreeNode[] path = potentialDescendant.getPath();
         for (TreeNode treeNode : path) {
             if (treeNode == node) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     static class TransferableNode implements Transferable {

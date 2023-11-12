@@ -113,6 +113,8 @@ public class CLArgumentTree {
     static JEditorPane nodeTextLabel = new JEditorPane();
     static Tree tree;
 
+
+
     private JPanel createTreeTab() {
         JPanel frame = new JBPanel<>(new BorderLayout());
         NodeDataJsonParser jsonParser = new NodeDataJsonParser();
@@ -127,13 +129,15 @@ public class CLArgumentTree {
         //==Tree settings===========
         CLArgsRenderers.CustomTreeModel treeModel = new CLArgsRenderers.CustomTreeModel(rootNode);
         tree = new Tree(treeModel);
+
         tree.setEditable(true);
         tree.setCellRenderer(new CLArgsRenderers.EditableCheckboxTreeCellRenderer());
         tree.setCellEditor(new CLArgsRenderers.EditableCheckboxTreeCellEditor());
         tree.setToggleClickCount(0);
         tree.setDragEnabled(true);
-        tree.setDropMode(DropMode.ON);
+        tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setTransferHandler(new CheckboxTreeTransferHandler(tree));
+        tree.setUI(new CLArgsTreeUI());
 
         CLArgUtils.expandAllNodes(tree, rootNode);
 

@@ -1,18 +1,12 @@
 package com.github.beardyking.simpleclargs.utils;
 
-import com.github.beardyking.simpleclargs.renderer.CLArgsRenderers;
 import com.github.beardyking.simpleclargs.serialization.NodeDataJsonParser;
-import com.github.beardyking.simpleclargs.types.NodeData;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.util.Enumeration;
 
 import static com.github.beardyking.simpleclargs.ui.CLArgumentTree.filePath;

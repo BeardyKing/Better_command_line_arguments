@@ -1,6 +1,5 @@
 package com.github.beardyking.simpleclargs.renderer;
 
-import com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow;
 import com.github.beardyking.simpleclargs.types.NodeData;
 import com.github.beardyking.simpleclargs.ui.CLArgumentTree;
 import com.github.beardyking.simpleclargs.utils.CLArgUtils;
@@ -15,7 +14,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
-
 
 public class CLArgsRenderers {
     public static class CustomTreeModel extends DefaultTreeModel {
@@ -43,8 +41,7 @@ public class CLArgsRenderers {
         }
 
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            if (value instanceof DefaultMutableTreeNode) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            if (value instanceof DefaultMutableTreeNode node) {
                 if (node.getUserObject() instanceof NodeData nodeData) {
                     checkBox.setSelected(nodeData.isSelected());
                     textField.setText(nodeData.getText());
