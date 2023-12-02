@@ -8,6 +8,8 @@ import com.github.beardyking.simpleclargs.utils.CLArgUtils;
 import com.github.beardyking.simpleclargs.utils.EnvironmentVariableExtractor;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -76,8 +78,16 @@ public class CLArgumentTree {
                 xmlContent = xmlContent.substring(0, startIndex) + configurationContent + xmlContent.substring(endIndex);
             }
 
-            VfsUtil.saveText(workspaceFile, xmlContent);
-            workspaceFile.refresh(true, true);
+            Application application = ApplicationManager.getApplication();
+            final String finalXmlContent = xmlContent;
+            application.invokeLater(() -> application.runWriteAction(() -> {
+                try {
+                    VfsUtil.saveText(workspaceFile, finalXmlContent);
+                    workspaceFile.refresh(true, true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -112,7 +122,6 @@ public class CLArgumentTree {
     public static DefaultMutableTreeNode rootNode;
     static JEditorPane nodeTextLabel = new JEditorPane();
     static Tree tree;
-
 
 
     private JPanel createTreeTab() {
@@ -409,7 +418,6 @@ public class CLArgumentTree {
 
         return tablePanel;
     }
-
 
 
     private static void addNode(JTree tree, NodeData newRawNodeData) {
