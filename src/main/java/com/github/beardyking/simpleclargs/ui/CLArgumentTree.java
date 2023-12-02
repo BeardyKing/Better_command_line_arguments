@@ -221,6 +221,14 @@ public class CLArgumentTree {
                 }
             }
         });
+        tree.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    toggleSelectedNodes(tree);
+                }
+            }
+        });
 
         //==START: debug code=======
         tree.addKeyListener(new KeyAdapter() {
@@ -308,6 +316,31 @@ public class CLArgumentTree {
         expandAllNodes(tree, newNodePath);
     }
 
+    private void toggleSelectedNodes(JTree tree) {
+        TreePath[] selectedPaths = tree.getSelectionPaths();
+        if (selectedPaths == null) {
+            return;
+        }
+
+        DefaultMutableTreeNode firstSelectedNode = (DefaultMutableTreeNode) selectedPaths[0].getLastPathComponent();
+        DefaultMutableTreeNode parent = (DefaultMutableTreeNode) firstSelectedNode.getParent();
+        if (parent == null) {
+            return;
+        }
+
+        boolean firstSelectedToggleState = false;
+        if (firstSelectedNode.getUserObject() instanceof NodeData firstNode) {
+            firstSelectedToggleState = firstNode.isSelected();
+        }
+
+        for (TreePath selectedPath : selectedPaths) {
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
+            if (selectedNode.getUserObject() instanceof NodeData nodeData) {
+                nodeData.setSelected(!firstSelectedToggleState);
+            }
+        }
+    }
+
     private void expandAllNodes(JTree tree, TreePath parentPath) {
         DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
         for (int i = 0; i < parentNode.getChildCount(); i++) {
@@ -326,7 +359,6 @@ public class CLArgumentTree {
 
     private JPanel createTableTab() {
         JPanel tablePanel = new JPanel(new BorderLayout());
-
 
         DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Variable Name", "Environment Variable Lookup"}, 0);
         JTable table = new JTable(tableModel) {
