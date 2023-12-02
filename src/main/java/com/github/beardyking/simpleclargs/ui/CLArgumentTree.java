@@ -55,6 +55,10 @@ public class CLArgumentTree {
         assert workspaceFile != null;
         System.out.println(workspaceFile.getName());
 
+        // if we don't resolve environment variable we will have extra "<" and ">" which will break the XML in workspace.xml
+        inCommandLineArguments = inCommandLineArguments.replace("<", "&lt;");
+        inCommandLineArguments = inCommandLineArguments.replace(">", "&gt;");
+
         try {
             String xmlContent = new String(workspaceFile.contentsToByteArray(), workspaceFile.getCharset());
             String tagToSearch = "<configuration name=";

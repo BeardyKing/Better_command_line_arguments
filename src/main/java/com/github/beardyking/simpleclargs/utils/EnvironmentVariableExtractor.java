@@ -15,7 +15,6 @@ public class EnvironmentVariableExtractor {
             String variableValue = System.getenv(variableName);
 
             if (variableValue != null) {
-
                 String replacement = Matcher.quoteReplacement(variableValue);
                 matcher.appendReplacement(result, replacement);
             } else {
