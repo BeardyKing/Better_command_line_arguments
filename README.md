@@ -4,6 +4,8 @@
 [![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 
+<!-- Plugin description -->
+
 ### Info:
 Better command line arguments is a small plugin that manages CLion "program arguments" as a tree structures, This plugin is highly inspired by the Visual Studio plugin [SmartCommandlineArgs](https://github.com/MBulli/SmartCommandlineArgs)
 
@@ -39,6 +41,7 @@ If there are any features you would like feel free to open a pull request.
 | "Ctrl + R"   | Manually parse CLArgs and save to workspace.xml           |
 | "Ctrl + V"   | Add CLArg with text from the clipboard in current folder  |
 
+<!-- Plugin description end -->
 
 ## Installation
 
