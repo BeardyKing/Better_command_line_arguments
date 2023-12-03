@@ -169,7 +169,7 @@ public class CLArgumentTree {
         //==Add node button=========
         JButton addNodeButton = new JButton((AllIcons.General.Add));
         addNodeButton.setPreferredSize(squareButtonSize);
-        String addTooltipText = "<html>Add CLArg to selected<br>Shortcut: \"Insert\"</html>";
+        String addTooltipText = "<html>Add CLArg to selected folder<br>Shortcut: \"Insert\"</html>";
         addNodeButton.setToolTipText(addTooltipText);
         addNodeButton.addActionListener(e -> addNode(tree, new NodeData()));
 
@@ -194,7 +194,7 @@ public class CLArgumentTree {
         //==Folder node button======
         JButton folderNodeButton = new JButton((AllIcons.Nodes.Folder));
         folderNodeButton.setPreferredSize(squareButtonSize);
-        String folderTooltipText = "<html>Add All Selected CLArgs to folder CLArgs<br>Shortcut: \"Home\"</html>";
+        String folderTooltipText = "<html>Add All Selected CLArgs to folder<br>Shortcut: \"Home\"</html>";
         folderNodeButton.setToolTipText(folderTooltipText);
         folderNodeButton.addActionListener(e -> moveSelectedNodesToFolder(tree));
 
