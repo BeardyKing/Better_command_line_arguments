@@ -57,15 +57,16 @@ public class CLArgumentTree {
         System.out.println(workspaceFile.getName());
 
         // if we don't resolve environment variable we will have extra "<" and ">" which will break the XML in workspace.xml
-        inCommandLineArguments = inCommandLineArguments.replace("<", "&lt;");
-        inCommandLineArguments = inCommandLineArguments.replace(">", "&gt;");
+        inCommandLineArguments = inCommandLineArguments.replaceAll("<", "&lt;");
+        inCommandLineArguments = inCommandLineArguments.replaceAll(">", "&gt;");
 
         try {
             String xmlContent = new String(workspaceFile.contentsToByteArray(), workspaceFile.getCharset());
             String tagToSearch = "<configuration name=";
             String attributeToSearch = "type=\"CMakeRunConfiguration\"";
-            if (xmlContent.contains(tagToSearch) && xmlContent.contains(attributeToSearch)) {
-                int startIndex = xmlContent.indexOf(tagToSearch);
+
+            int startIndex = 0;
+            while ((startIndex = xmlContent.indexOf(tagToSearch, startIndex)) != -1) {
                 int endIndex = xmlContent.indexOf(">", startIndex) + 1;
                 String configurationContent = xmlContent.substring(startIndex, endIndex);
 
@@ -74,13 +75,14 @@ public class CLArgumentTree {
 
                 if (matcher.find()) {
                     String match = matcher.group();
-                    configurationContent = configurationContent.replace(match, "PROGRAM_PARAMS=\"" + inCommandLineArguments + "\"");
+                    configurationContent = configurationContent.replaceAll(match, "PROGRAM_PARAMS=\"" + inCommandLineArguments + "\"");
                 } else {
                     // likely did not find `PROGRAM_PARAMS` as it doesn't exist in the XML file
                     // so add `PROGRAM_PARAMS` to `configuration`  in the workspace virtual file
-                    configurationContent = configurationContent.replace(">", " PROGRAM_PARAMS=\"" + inCommandLineArguments + "\">");
+                    configurationContent = configurationContent.replaceAll(">", " PROGRAM_PARAMS=\"" + inCommandLineArguments + "\">");
                 }
                 xmlContent = xmlContent.substring(0, startIndex) + configurationContent + xmlContent.substring(endIndex);
+                startIndex = endIndex;
             }
 
             Application application = ApplicationManager.getApplication();
@@ -97,6 +99,7 @@ public class CLArgumentTree {
             throw new RuntimeException(e);
         }
     }
+
 
     public CLArgumentTree() {
         JBTabbedPane tabbedPane = new JBTabbedPane();
