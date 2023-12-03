@@ -39,6 +39,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,7 +100,7 @@ public class CLArgumentTree {
 
     public CLArgumentTree() {
         JBTabbedPane tabbedPane = new JBTabbedPane();
-        tabbedPane.addTab("CLArgs", createTreeTab());
+        tabbedPane.addTab("CL Args", createTreeTab());
         tabbedPane.addTab("CL Vars", createTableTab());
 
         frame.add(tabbedPane, BorderLayout.CENTER);
@@ -134,8 +135,8 @@ public class CLArgumentTree {
         rootNode = jsonParser.loadNodeDataTreeFromJson(filePath);
 
         if (rootNode == null) {
-            rootNode = new DefaultMutableTreeNode(new NodeData(true, "CLArgs", false));
-            DefaultMutableTreeNode leafEnv = new DefaultMutableTreeNode(new NodeData(false, "-CLA environment variables <CLion>", true));
+            rootNode = new DefaultMutableTreeNode(new NodeData(true, "CL Args", false));
+            DefaultMutableTreeNode leafEnv = new DefaultMutableTreeNode(new NodeData(false, "-environment variables <PROCESSOR_ARCHITECTURE>", true));
             rootNode.add(leafEnv);
         }
 
@@ -168,12 +169,15 @@ public class CLArgumentTree {
         //==Add node button=========
         JButton addNodeButton = new JButton((AllIcons.General.Add));
         addNodeButton.setPreferredSize(squareButtonSize);
+        String addTooltipText = "<html>Add CLArg to selected<br>Shortcut: \"Insert\"</html>";
+        addNodeButton.setToolTipText(addTooltipText);
         addNodeButton.addActionListener(e -> addNode(tree, new NodeData()));
-
 
         //==Remove node button======
         JButton removeNodeButton = new JButton((AllIcons.General.Remove));
         removeNodeButton.setPreferredSize(squareButtonSize);
+        String removeTooltipText = "<html>Remove All Selected CLArgs<br>Shortcut: \"Delete\"</html>";
+        removeNodeButton.setToolTipText(removeTooltipText);
         removeNodeButton.addActionListener(e -> {
             TreePath[] selectedPaths = tree.getSelectionPaths();
             if (selectedPaths != null) {
@@ -190,7 +194,40 @@ public class CLArgumentTree {
         //==Folder node button======
         JButton folderNodeButton = new JButton((AllIcons.Nodes.Folder));
         folderNodeButton.setPreferredSize(squareButtonSize);
+        String folderTooltipText = "<html>Add All Selected CLArgs to folder CLArgs<br>Shortcut: \"Home\"</html>";
+        folderNodeButton.setToolTipText(folderTooltipText);
         folderNodeButton.addActionListener(e -> moveSelectedNodesToFolder(tree));
+
+        //==Folder node move up=====
+        JButton moveUpNodeButton = new JButton((AllIcons.General.ArrowUp));
+        moveUpNodeButton.setPreferredSize(squareButtonSize);
+        String moveUpTooltipText = "<html>Move Selected CLArgs up in folder<br>Shortcut: \"Alt+Up\"</html>";
+        moveUpNodeButton.setToolTipText(moveUpTooltipText);
+        moveUpNodeButton.addActionListener(e -> moveSelectedNodesUp(tree));
+
+        //==Folder node move down===
+        JButton moveDownNodeButton = new JButton((AllIcons.General.ArrowDown));
+        moveDownNodeButton.setPreferredSize(squareButtonSize);
+        String moveDownTooltipText = "<html>Move Selected CLArgs down in folder<br>Shortcut: \"Alt+Down\"</html>";
+        moveDownNodeButton.setToolTipText(moveDownTooltipText);
+        moveDownNodeButton.addActionListener(e -> moveSelectedNodesDown(tree));
+
+        tree.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_UP && e.isAltDown()) {
+                    moveSelectedNodesUp(tree);
+                }
+            }
+        });
+        tree.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DOWN && e.isAltDown()) {
+                    moveSelectedNodesDown(tree);
+                }
+            }
+        });
 
         tree.addKeyListener(new KeyAdapter() {
             @Override
@@ -251,6 +288,8 @@ public class CLArgumentTree {
         buttonPanel.add(addNodeButton);
         buttonPanel.add(removeNodeButton);
         buttonPanel.add(folderNodeButton);
+        buttonPanel.add(moveUpNodeButton);
+        buttonPanel.add(moveDownNodeButton);
 
         frame.add(treePanel, BorderLayout.CENTER);
         frame.add(buttonPanel, BorderLayout.NORTH);
@@ -319,6 +358,94 @@ public class CLArgumentTree {
 
         expandAllNodes(tree, newNodePath);
     }
+
+    private void moveSelectedNodesUp(JTree tree) {
+        TreePath[] selectedPaths = tree.getSelectionPaths();
+        if (selectedPaths != null && selectedPaths.length > 0) {
+            sort(selectedPaths, (path1, path2) -> {
+                DefaultMutableTreeNode n1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+                DefaultMutableTreeNode pn1 = (DefaultMutableTreeNode) n1.getParent();
+
+                DefaultMutableTreeNode n2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+                DefaultMutableTreeNode pn2 = (DefaultMutableTreeNode) n2.getParent();
+
+                int index1 = pn1.getIndex(n1);
+                int index2 = pn2.getIndex(n2);
+                return Integer.compare(index1, index2);
+            });
+
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            Vector<DefaultMutableTreeNode> movedNodes = new Vector<>();
+
+            for (TreePath path : selectedPaths) {
+                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) selectedNode.getParent();
+
+                if (parent != null) {
+                    int selectedIndex = parent.getIndex(selectedNode);
+
+                    if (selectedIndex > 0) {
+                        model.removeNodeFromParent(selectedNode);
+                        model.insertNodeInto(selectedNode, parent, selectedIndex - 1);
+
+                        movedNodes.add(selectedNode);
+                    }
+                }
+            }
+
+            // Update the selection paths to keep the moved nodes selected
+            TreePath[] newSelectionPaths = new TreePath[movedNodes.size()];
+            for (int i = 0; i < movedNodes.size(); i++) {
+                newSelectionPaths[i] = new TreePath(movedNodes.get(i).getPath());
+            }
+            tree.setSelectionPaths(newSelectionPaths);
+        }
+    }
+
+
+    private void moveSelectedNodesDown(JTree tree) {
+        TreePath[] selectedPaths = tree.getSelectionPaths();
+        if (selectedPaths != null && selectedPaths.length > 0) {
+            sort(selectedPaths, (path1, path2) -> {
+                DefaultMutableTreeNode n1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+                DefaultMutableTreeNode pn1 = (DefaultMutableTreeNode) n1.getParent();
+
+                DefaultMutableTreeNode n2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+                DefaultMutableTreeNode pn2 = (DefaultMutableTreeNode) n2.getParent();
+
+                int index1 = pn1.getIndex(n1);
+                int index2 = pn2.getIndex(n2);
+                return Integer.compare(index2, index1);
+            });
+
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            Vector<DefaultMutableTreeNode> movedNodes = new Vector<>();
+
+            for (TreePath path : selectedPaths) {
+                DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+                DefaultMutableTreeNode parent = (DefaultMutableTreeNode) selectedNode.getParent();
+
+                if (parent != null) {
+                    int selectedIndex = parent.getIndex(selectedNode);
+                    int parentSize = parent.getChildCount();
+
+                    if (selectedIndex >= 0 && selectedIndex < parentSize - 1) {
+                        model.removeNodeFromParent(selectedNode);
+                        model.insertNodeInto(selectedNode, parent, selectedIndex + 1);
+
+                        movedNodes.add(selectedNode);
+                    }
+                }
+            }
+
+            TreePath[] newSelectionPaths = new TreePath[movedNodes.size()];
+            for (int i = 0; i < movedNodes.size(); i++) {
+                newSelectionPaths[i] = new TreePath(movedNodes.get(i).getPath());
+            }
+            tree.setSelectionPaths(newSelectionPaths);
+        }
+    }
+
 
     private void toggleSelectedNodes(JTree tree) {
         TreePath[] selectedPaths = tree.getSelectionPaths();
@@ -406,12 +533,11 @@ public class CLArgumentTree {
             }
         });
 
-        JButton addButton = new JButton("+");
+        JButton addButton = new JButton((AllIcons.General.Add));
         addButton.setPreferredSize(squareButtonSize);
 
-        JButton removeButton = new JButton("-");
+        JButton removeButton = new JButton((AllIcons.General.Remove));
         removeButton.setPreferredSize(squareButtonSize);
-
 
         addButton.addActionListener(e -> {
             int[] rows = table.getSelectedRows();

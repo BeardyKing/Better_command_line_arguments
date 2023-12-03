@@ -17,7 +17,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow" id="CLArgs"/>
+        <toolWindow factoryClass="com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow" id="Better command line args"/>
     </extensions>
 
     <actions>
@@ -31,11 +31,11 @@
 <!--                description="Insert new CLArg under selected row">-->
 <!--            <keyboard-shortcut keymap="$default" first-keystroke="INSERT"/>-->
 <!--        </action>-->
-        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc"
-                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc" text="Deselect"
-                description="Deselect CLArgs table">
-            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
-        </action>
+<!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc"-->
+<!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc" text="Deselect"-->
+<!--                description="Deselect CLArgs table">-->
+<!--            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>-->
+<!--        </action>-->
 <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter"-->
 <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter" text="CLArg_Toggle"-->
 <!--                description="Toggle selected CLArgs between enabled and disabled.">-->
