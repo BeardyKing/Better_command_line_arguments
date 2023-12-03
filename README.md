@@ -13,7 +13,7 @@ This plugin will write raw command line text to `workspace.xml` which is used by
 The `CLArgs.json` file saves your current CLArg tree, but doesn't doesn't store raw environment variables data, instead it stores the environment variable name i.e. `<OS>` this could potentially resolve to `Windows_NT` and can be viewed in the command line argument preview at the bottom of the plugin.
 
 ### Preview:
-![res/clarg_tree_screenshot.png](example CLArg tree)
+![CLArg](res/clarg_tree_screenshot.png "example CLArg tree")
 
 ### Roadmap:
 Better command line arguments in its current form are presented in a state of a minimal viable plugin. I've written this plugin to match a simple workflow that I use on a daily basis. This plugin doesn't match all the features the visual studio plugin has but maybe in the future, I have provided a list of various features that this plugin would benefit from having.
