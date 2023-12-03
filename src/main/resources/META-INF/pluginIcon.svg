@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #2f3134;
+        stroke: #2f3134;
+        stroke-width: 2px;
+      }
+
+      .cls-2 {
+        font-size: 49.023px;
+        fill: #ced0d6;
+        font-family: "JetBrains Mono";
+        font-weight: 700;
+      }
+
+      .cls-3 {
+        fill: #feb900;
+      }
+    </style>
+  </defs>
+  <circle class="cls-1" cx="18" cy="18" r="16"/>
+  <text id="__" data-name="&gt;_" class="cls-2" transform="translate(6.342 22.529) scale(0.387)">&gt;<tspan class="cls-3">_</tspan></text>
+</svg>

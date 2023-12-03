@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.beardyking.bettercommandlineargs</id>
-    <name>better_command_line_args Template</name>
+    <name>better_command_line_arguments</name>
     <vendor>beardyking</vendor>
 
     <depends>com.intellij.cidr.base</depends>
@@ -13,43 +13,43 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.lang</depends>
 
-
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow" id="Better command line args"/>
+        <toolWindow factoryClass="com.github.beardyking.simpleclargs.toolWindow.CLArgumentsToolWindow"
+                    id="Better command line args" icon="AllIcons.Actions.ChangeView"/>
     </extensions>
 
     <actions>
-<!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete"-->
-<!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete" text="CLArg_Delete"-->
-<!--                description="Delete command line argument table selection">-->
-<!--            <keyboard-shortcut keymap="$default" first-keystroke="DELETE"/>-->
-<!--        </action>-->
-<!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert"-->
-<!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert" text="Insert"-->
-<!--                description="Insert new CLArg under selected row">-->
-<!--            <keyboard-shortcut keymap="$default" first-keystroke="INSERT"/>-->
-<!--        </action>-->
-<!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc"-->
-<!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc" text="Deselect"-->
-<!--                description="Deselect CLArgs table">-->
-<!--            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>-->
-<!--        </action>-->
-<!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter"-->
-<!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter" text="CLArg_Toggle"-->
-<!--                description="Toggle selected CLArgs between enabled and disabled.">-->
-<!--            <keyboard-shortcut keymap="$default" first-keystroke="ENTER"/>-->
-<!--        </action>-->
-        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveDown"
-                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveDown" text="CLArgs_MoveDown"
-                description="Move selected CLArgs down">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl DOWN"/>
-        </action>
-        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveUp"
-                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveUp" text="CLArgs_MoveUp"
-                description="Move selected CLArgs up">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl UP"/>
-        </action>
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsDelete" text="CLArg_Delete"-->
+        <!--                description="Delete command line argument table selection">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="DELETE"/>-->
+        <!--        </action>-->
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsInsert" text="Insert"-->
+        <!--                description="Insert new CLArg under selected row">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="INSERT"/>-->
+        <!--        </action>-->
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEsc" text="Deselect"-->
+        <!--                description="Deselect CLArgs table">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>-->
+        <!--        </action>-->
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsEnter" text="CLArg_Toggle"-->
+        <!--                description="Toggle selected CLArgs between enabled and disabled.">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="ENTER"/>-->
+        <!--        </action>-->
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveDown"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveDown" text="CLArgs_MoveDown"-->
+        <!--                description="Move selected CLArgs down">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="ctrl DOWN"/>-->
+        <!--        </action>-->
+        <!--        <action id="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveUp"-->
+        <!--                class="com.github.beardyking.simpleclargs.actions.CLArgsActionsMoveUp" text="CLArgs_MoveUp"-->
+        <!--                description="Move selected CLArgs up">-->
+        <!--            <keyboard-shortcut keymap="$default" first-keystroke="ctrl UP"/>-->
+        <!--        </action>-->
     </actions>
 </idea-plugin>
