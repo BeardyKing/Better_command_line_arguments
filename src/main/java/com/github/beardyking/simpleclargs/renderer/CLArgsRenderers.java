@@ -66,7 +66,6 @@ public class CLArgsRenderers {
                     } else {
                         iconLabel.setIcon(AllIcons.Nodes.Folder);
                     }
-                    tree.repaint();
                 }
             }
             return this;
