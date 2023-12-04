@@ -7,7 +7,7 @@
 <!-- Plugin description -->
 
 ### Info:
-Better command line arguments is a small plugin that manages CLion "program arguments" as a tree structures, This plugin is highly inspired by the Visual Studio plugin [SmartCommandlineArgs](https://github.com/MBulli/SmartCommandlineArgs)
+Better command line arguments is a CLion 2022.3.3+ plugin that manages your "program arguments" as a tree structures, this plugin is highly inspired by the Visual Studio plugin [SmartCommandlineArgs](https://github.com/MBulli/SmartCommandlineArgs)
 
 ### Warning:
 This plugin will write raw command line text to `workspace.xml` which is used by CLion to manage Configurations, be sure to validate that your `.idea` folder is ignored from public repositories.
@@ -30,16 +30,18 @@ If there are any features you would like feel free to open a pull request.
 
 #### Shortcuts:
 
-| keybind      | use                                                       |
-| ------------ | --------------------------------------------------------- |
-| "Insert"     | Add CLArg to current selected folder                      |
-| "Delete"     | Remove all currently selected CLArgs                      |
-| "Home"       | Add all currently selected CLArgs to new Folder           |
-| "Space"      | Toggle all currently selected CLArgs on/off               |
-| "Alt + Up"   | Move all currently selected CLArgs up in current folder   | 
-| "Alt + Down" | Move all currently selected CLArgs down in current folder |
-| "Ctrl + R"   | Manually parse CLArgs and save to workspace.xml           |
-| "Ctrl + V"   | Add CLArg with text from the clipboard in current folder  |
+| keybind        | use                                                       |
+| -------------- | --------------------------------------------------------- |
+| "Insert"       | Add CLArg to current selected folder                      |
+| "Delete"       | Remove all currently selected CLArgs                      |
+| "Home"         | Add all currently selected CLArgs to new Folder           |
+| "Space"        | Toggle all currently selected CLArgs on/off               |
+| "Alt + Up"     | Move all currently selected CLArgs up in current folder   |
+| "Alt + Down"   | Move all currently selected CLArgs down in current folder |
+| "Ctrl + R"     | Manually parse CLArgs and save to workspace.xml           |
+| "Ctrl + V"     | Add CLArg with text from the clipboard in current folder  |
+| "Middle Mouse" | Toggle currently mouse hovered CLArg on/off               | 
+
 
 <!-- Plugin description end -->
 

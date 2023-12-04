@@ -37,6 +37,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -106,6 +108,8 @@ public class CLArgumentTree {
         tabbedPane.addTab("CL Args", createTreeTab());
         tabbedPane.addTab("CL Vars", createTableTab());
 
+        toggleTreeOnMiddleMouseClick(tree);
+
         frame.add(tabbedPane, BorderLayout.CENTER);
         frame.setVisible(true);
     }
@@ -131,6 +135,24 @@ public class CLArgumentTree {
     static JEditorPane nodeTextLabel = new JEditorPane();
     static Tree tree;
 
+    private void toggleTreeOnMiddleMouseClick(JTree tree) {
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON2) {
+                    TreePath clickedPath = tree.getPathForLocation(e.getX(), e.getY());
+
+                    if (clickedPath != null) {
+                        Rectangle checkBoxBounds = tree.getPathBounds(clickedPath);
+                        if (checkBoxBounds != null && checkBoxBounds.contains(e.getPoint())) {
+                            toggleSelectedNodes(tree);
+                            tree.repaint();
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     private JPanel createTreeTab() {
         JPanel frame = new JBPanel<>(new BorderLayout());
@@ -270,6 +292,7 @@ public class CLArgumentTree {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     toggleSelectedNodes(tree);
+                    tree.repaint();
                 }
             }
         });
