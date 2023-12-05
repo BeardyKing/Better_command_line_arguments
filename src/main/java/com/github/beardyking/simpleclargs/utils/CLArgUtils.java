@@ -1,6 +1,8 @@
 package com.github.beardyking.simpleclargs.utils;
 
 import com.github.beardyking.simpleclargs.serialization.NodeDataJsonParser;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -9,13 +11,16 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.util.Enumeration;
 
-import static com.github.beardyking.simpleclargs.ui.CLArgumentTree.filePath;
+import static com.github.beardyking.simpleclargs.ui.CLArgumentTree.saveFileName;
 import static com.github.beardyking.simpleclargs.ui.CLArgumentTree.rootNode;
 
 public class CLArgUtils {
     public static void saveCommandTreeToFile() {
         NodeDataJsonParser jsonParser = new NodeDataJsonParser();
-        jsonParser.saveNodeDataTreeToJson(rootNode, filePath);
+        Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        String basePath = project.getBasePath();
+        String saveFilePath = basePath + "/.idea/" + saveFileName;
+        jsonParser.saveNodeDataTreeToJson(rootNode, saveFilePath);
     }
 
     public static void expandAllNodes(JTree tree, TreePath parentPath) {

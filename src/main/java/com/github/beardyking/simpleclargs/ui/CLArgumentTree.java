@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.sort;
 
 public class CLArgumentTree {
-    public static String filePath = "CLArgs.json";
+    public static String saveFileName = "CLArgs.json";
     public final JPanel frame = new JPanel(new BorderLayout());
     static Dimension squareButtonSize = new Dimension(32, 32);
 
@@ -146,6 +146,9 @@ public class CLArgumentTree {
                         Rectangle checkBoxBounds = tree.getPathBounds(clickedPath);
                         if (checkBoxBounds != null && checkBoxBounds.contains(e.getPoint())) {
                             toggleSelectedNodes(tree);
+                            updatePreviewNodeText();
+                            CLArgUtils.saveCommandTreeToFile();
+                            updateClargData(updateNodeTexts(rootNode));
                             tree.repaint();
                         }
                     }
@@ -157,7 +160,10 @@ public class CLArgumentTree {
     private JPanel createTreeTab() {
         JPanel frame = new JBPanel<>(new BorderLayout());
         NodeDataJsonParser jsonParser = new NodeDataJsonParser();
-        rootNode = jsonParser.loadNodeDataTreeFromJson(filePath);
+        Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        String basePath = project.getBasePath();
+        String saveFilePath = basePath + "/.idea/" + saveFileName;
+        rootNode = jsonParser.loadNodeDataTreeFromJson(saveFilePath);
 
         if (rootNode == null) {
             rootNode = new DefaultMutableTreeNode(new NodeData(true, "CL Args", false));
@@ -292,6 +298,9 @@ public class CLArgumentTree {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     toggleSelectedNodes(tree);
+                    updatePreviewNodeText();
+                    CLArgUtils.saveCommandTreeToFile();
+                    updateClargData(updateNodeTexts(rootNode));
                     tree.repaint();
                 }
             }
