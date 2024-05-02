@@ -9,7 +9,7 @@
 <!-- Plugin description -->
 
 ### Info:
-Better command line arguments is a CLion 2022.3.3 - 2023.3.X plugin that manages your 'program arguments' as a tree structures, this plugin is highly inspired by the Visual Studio plugin [SmartCommandlineArgs](https://github.com/MBulli/SmartCommandlineArgs)
+Better command line arguments is a CLion 2022.3.3 - 2024.1.X plugin that manages your 'program arguments' as a tree structures, this plugin is highly inspired by the Visual Studio plugin [SmartCommandlineArgs](https://github.com/MBulli/SmartCommandlineArgs)
 
 ### Warning:
 This plugin will write raw command line text to `workspace.xml` which is used by CLion to manage Configurations, be sure to validate that your `.idea` folder is ignored from public repositories.
